@@ -16,6 +16,3 @@ class Base:
     def wait_for_prasence_of_element(driver,timeout,element):
         wait=WebDriverWait(driver,timeout)
         wait.until(EC.presence_of_element_located(element))
-
-    def dummy(self):
-        pass
