@@ -1,0 +1,11 @@
+#Benefits of Using POM
+=>Encapsulation: Test logic is separated from UI element details.
+=>Reusability: POM files can be reused across multiple tests.
+=>Maintainability: If the UI changes, you only update locators in the POM file, not all test cases.
+=>Clarity: Test cases become cleaner and more readable.
+----------------------------------------------------------------------------
+#Checklist for POM Files
+=>Locators: Define all necessary locators using appropriate strategies (ID, XPath, CSS Selectors).
+=>Methods: Include methods for actions and verifications on the page.
+=>Encapsulation: Avoid hardcoding data directly into methods; use test data files or parameterized inputs.
+=>Structure: Organize POM files by web pages or logical components.
