@@ -8,11 +8,11 @@ class Base:
         return url
 
     @staticmethod
-    def wait_for_visibilty_of_element(driver,timeout,element):
+    def wait_for_visibility_of_element(driver,timeout,element):
         wait = WebDriverWait(driver,timeout)
         wait.until(EC.visibility_of_element_located(element))
 
     @staticmethod
-    def wait_for_prasence_of_element(driver,timeout,element):
+    def wait_for_presence_of_element(driver,timeout,element):
         wait=WebDriverWait(driver,timeout)
         wait.until(EC.presence_of_element_located(element))
