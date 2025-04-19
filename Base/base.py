@@ -16,3 +16,15 @@ class Base:
     def wait_for_presence_of_element(driver,timeout,element):
         wait=WebDriverWait(driver,timeout)
         wait.until(EC.presence_of_element_located(element))
+
+        """
+        lamda
+        fibonaci
+        factoerial - itrative,
+        kaskem
+        recursion
+        high order function and its usages
+        guise game proggram via while loop
+        git
+        pr create 
+        """
