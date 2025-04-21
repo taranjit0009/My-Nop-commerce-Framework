@@ -2,10 +2,10 @@ pipeline {
     agent any
 
     environment {
-        PYTHON_VERSION = '3.8'  // Using stable version
+        PYTHON_VERSION = '3.8'
         BROWSER = 'chrome'
-        // Add Python to PATH if not already there
         PATH = "${env.PATH};C:\\Python${PYTHON_VERSION.replace('.','')}\\Scripts;C:\\Python${PYTHON_VERSION.replace('.','')}"
+        ALLURE_HOME = "C:\\allure" // Make sure Allure is installed here
     }
 
     stages {
@@ -15,20 +15,37 @@ pipeline {
             }
         }
 
+        stage('Set Up Tools') {
+            steps {
+                script {
+                    // Install Allure if not present
+                    try {
+                        bat 'allure --version'
+                    } catch (Exception e) {
+                        bat '''
+                            echo Installing Allure...
+                            curl -o allure.zip https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.13.8/allure-commandline-2.13.8.zip
+                            mkdir "%ALLURE_HOME%"
+                            tar -xf allure.zip -C "%ALLURE_HOME%" --strip-components=1
+                            del allure.zip
+                            setx PATH "%PATH%;%ALLURE_HOME%\\bin"
+                        '''
+                    }
+                }
+            }
+        }
+
         stage('Set Up Python') {
             steps {
                 bat '''
                     @echo off
-                    :: Check if Python is already installed
                     python --version > nul 2>&1
                     if %errorlevel% neq 0 (
                         echo Installing Python...
-                        :: Download and install Python silently
                         curl -o python-installer.exe https://www.python.org/ftp/python/%PYTHON_VERSION%/python-%PYTHON_VERSION%-amd64.exe
                         start /wait python-installer.exe /quiet InstallAllUsers=1 PrependPath=1
                         del python-installer.exe
                     )
-                    :: Verify installation
                     python --version
                     pip --version
                 '''
@@ -48,13 +65,16 @@ pipeline {
         stage('Run Tests') {
             steps {
                 bat """
-                    python -m pytest -v -s  --browser %BROWSER% --alluredir=allure-results testcases/
+                    python -m pytest -v -s --browser %BROWSER% --alluredir=allure-results testcases/
                 """
             }
-            post {
-                always {
-                    allure report: 'allure-results', results: [[path: 'allure-results']]
-                }
+        }
+
+        stage('Generate Allure Report') {
+            steps {
+                bat '''
+                    allure generate allure-results --clean -o allure-report
+                '''
             }
         }
 
@@ -66,17 +86,32 @@ pipeline {
                 }
             }
             steps {
-                publishHTML(
-                    target: [
-                        allowMissing: false,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'allure-results',
-                        reportFiles: 'index.html',
-                        reportName: 'Allure Report'
-                    ]
-                )
+                script {
+                    // Verify report exists before publishing
+                    def reportExists = fileExists 'allure-report/index.html'
+                    if (!reportExists) {
+                        error "Allure report not found at allure-report/index.html"
+                    }
+                    publishHTML(
+                        target: [
+                            allowMissing: false,
+                            alwaysLinkToLastBuild: true,
+                            keepAll: true,
+                            reportDir: 'allure-report',
+                            reportFiles: 'index.html',
+                            reportName: 'Allure Report'
+                        ]
+                    )
+                }
             }
+        }
+    }
+    post {
+        always {
+            // Archive test results
+            archiveArtifacts artifacts: 'allure-results/**/*'
+            // Clean up workspace if needed
+            // cleanWs()
         }
     }
 }
