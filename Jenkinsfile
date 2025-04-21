@@ -17,7 +17,7 @@ pipeline {
             steps {
                 sh '''
                     sudo apt-get update -y
-                    sudo apt-get install -y python3.9 python3.9-venv python3.9-dev python3-pip
+                    sudo apt-get install -y python python -venv python -dev python3 -pip
                 '''
             }
         }
@@ -25,9 +25,9 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh '''
-                    python${PYTHON_VERSION} -m pip install --upgrade pip
-                    python${PYTHON_VERSION} -m pip install -r requirements.txt
-                    python${PYTHON_VERSION} -m pip install pytest selenium pytest-selenium allure-pytest webdriver-manager
+                    python -m pip install --upgrade pip
+                    python -m pip install -r requirements.txt
+                    python -m pip install pytest selenium pytest-selenium allure-pytest webdriver-manager
                 '''
             }
         }
@@ -35,7 +35,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 sh """
-                    python${PYTHON_VERSION} -m pytest -v -s --browser=${env.BROWSER} --alluredir=allure-results tests/
+                    python -m pytest -v -s --browser=${env.BROWSER} --alluredir=allure-results tests/
                 """
             }
             post {
