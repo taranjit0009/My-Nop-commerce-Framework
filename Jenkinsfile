@@ -57,13 +57,6 @@ pipeline {
                 }
             }
         }
-        stage('Generate Allure Report') {
-            steps {
-                bat '''
-                    allure generate allure-results -o allure-report --clean
-                '''
-            }
-        }
 
         stage('Publish HTML Report') {
             when {
