@@ -2,9 +2,8 @@ pipeline {
     agent any
 
     environment {
-        PYTHON_VERSION = '3.8'  // Using stable version
+        PYTHON_VERSION = '3.8'
         BROWSER = 'chrome'
-        // Add Python to PATH if not already there
         PATH = "${env.PATH};C:\\Python${PYTHON_VERSION.replace('.','')}\\Scripts;C:\\Python${PYTHON_VERSION.replace('.','')}"
     }
 
@@ -19,16 +18,13 @@ pipeline {
             steps {
                 bat '''
                     @echo off
-                    :: Check if Python is already installed
                     python --version > nul 2>&1
                     if %errorlevel% neq 0 (
                         echo Installing Python...
-                        :: Download and install Python silently
                         curl -o python-installer.exe https://www.python.org/ftp/python/%PYTHON_VERSION%/python-%PYTHON_VERSION%-amd64.exe
                         start /wait python-installer.exe /quiet InstallAllUsers=1 PrependPath=1
                         del python-installer.exe
                     )
-                    :: Verify installation
                     python --version
                     pip --version
                 '''
@@ -41,6 +37,7 @@ pipeline {
                     python -m pip install --upgrade pip
                     python -m pip install -r requirements.txt
                     python -m pip install pytest selenium pytest-selenium allure-pytest webdriver-manager
+                    python -m pip install allure-python-commons
                 '''
             }
         }
@@ -48,34 +45,22 @@ pipeline {
         stage('Run Tests') {
             steps {
                 bat """
-                    python -m pytest -v -s  --browser %BROWSER% --alluredir=allure-results testcases/
+                    python -m pytest -v -s --browser %BROWSER% --alluredir=allure-results testcases/
                 """
             }
             post {
                 always {
-                    allure report: 'allure-results', results: [[path: 'allure-results']]
+                    // Clean existing results to prevent conflicts
+                    cleanWs()
+                    // Generate and publish Allure report
+                    allure([
+                        includeProperties: false,
+                        jdk: '',
+                        properties: [],
+                        reportBuildPolicy: 'ALWAYS',
+                        results: [[path: 'allure-results']]
+                    ])
                 }
-            }
-        }
-
-        stage('Publish HTML Report') {
-            when {
-                anyOf {
-                    equals expected: 'SUCCESS', actual: currentBuild.currentResult
-                    equals expected: 'UNSTABLE', actual: currentBuild.currentResult
-                }
-            }
-            steps {
-                publishHTML(
-                    target: [
-                        allowMissing: false,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'allure-results',
-                        reportFiles: 'index.html',
-                        reportName: 'Allure Report'
-                    ]
-                )
             }
         }
     }
