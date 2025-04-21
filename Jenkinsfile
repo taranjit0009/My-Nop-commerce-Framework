@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        PYTHON_VERSION = '3.9'  // Updated: Use stable Python version
+        PYTHON_VERSION = '3.13'  // Updated: Use stable Python version
         BROWSER = 'chrome'      // Default browser
     }
 
@@ -13,11 +13,11 @@ pipeline {
             }
         }
 
-        stage('Set Up Python') {
+       stage('Set Up Python') {
             steps {
                 sh '''
                     sudo apt-get update -y
-                    sudo apt-get install -y python${PYTHON_VERSION} python${PYTHON_VERSION}-venv python${PYTHON_VERSION}-dev python3-pip
+                    sudo apt-get install -y python3.9 python3.9-venv python3.9-dev python3-pip
                 '''
             }
         }
