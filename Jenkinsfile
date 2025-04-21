@@ -40,7 +40,7 @@ pipeline {
                 bat '''
                     python -m pip install --upgrade pip
                     python -m pip install -r requirements.txt
-                    python -m pip install pytest selenium pytest-selenium  webdriver-manager
+                    python -m pip install pytest selenium pytest-selenium allure-pytest webdriver-manager
                 '''
             }
         }
@@ -48,7 +48,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 bat """
-                    python -m pytest -v -s  --browser %BROWSER% --alluredir=allure-results testcases/
+                    python -m pytest -v -s testcases --browser %BROWSER% --alluredir=./allure-results --clean-alluredir/
                 """
             }
             post {
@@ -65,17 +65,11 @@ pipeline {
                     equals expected: 'UNSTABLE', actual: currentBuild.currentResult
                 }
             }
-            steps {
-                publishHTML(
-                    target: [
-                        allowMissing: false,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'allure-results',
-                        reportFiles: 'index.html',
-                        reportName: 'Allure Report'
-                    ]
-                )
+            stage("Publish Allure Report"){
+            steps{
+            echo"Publish Allure"
+            allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
+            }
             }
         }
     }
