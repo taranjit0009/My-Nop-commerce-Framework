@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        PYTHON_VERSION = '3.13'  // Fixed: Use a specific version
-        BROWSER = 'chrome'     // Default browser
+        PYTHON_VERSION = '3.9'  // Updated: Use stable Python version
+        BROWSER = 'chrome'      // Default browser
     }
 
     stages {
@@ -15,25 +15,28 @@ pipeline {
 
         stage('Set Up Python') {
             steps {
-                // Install Python (Linux only; Windows agents must have Python pre-installed)
-                sh """
+                sh '''
                     sudo apt-get update -y
-                    sudo apt-get install -y python${PYTHON_VERSION} python${PYTHON_VERSION}-pip
-                """
+                    sudo apt-get install -y python${PYTHON_VERSION} python${PYTHON_VERSION}-venv python${PYTHON_VERSION}-dev python3-pip
+                '''
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                sh "python -m pip install --upgrade pip"
-                sh "python -m pip install -r requirements.txt"
-                sh "python -m pip install pytest selenium pytest-selenium allure-pytest webdriver-manager"
+                sh '''
+                    python${PYTHON_VERSION} -m pip install --upgrade pip
+                    python${PYTHON_VERSION} -m pip install -r requirements.txt
+                    python${PYTHON_VERSION} -m pip install pytest selenium pytest-selenium allure-pytest webdriver-manager
+                '''
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh "python -m pytest -v -s --browser=${env.BROWSER} --alluredir=allure-results tests/"
+                sh """
+                    python${PYTHON_VERSION} -m pytest -v -s --browser=${env.BROWSER} --alluredir=allure-results tests/
+                """
             }
             post {
                 always {
