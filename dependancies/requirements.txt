@@ -1,7 +1,0 @@
-pytest
-selenium
-openpyxl
-pytest-xdist
-pytest-html
-allure-pytest
-logging-test-case
