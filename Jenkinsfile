@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent none
 
     environment {
         PYTHON_VERSION = '3.8'  // Using stable version
