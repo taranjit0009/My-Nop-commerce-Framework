@@ -2,10 +2,11 @@ pipeline {
     agent any
 
     environment {
-        PYTHON_VERSION = '3.8'  // Using stable version
+        PYTHON_VERSION = '3.8'
         BROWSER = 'chrome'
         // Add Python to PATH if not already there
         PATH = "${env.PATH};C:\\Python${PYTHON_VERSION.replace('.','')}\\Scripts;C:\\Python${PYTHON_VERSION.replace('.','')}"
+        ALLURE_RESULTS = 'allure-results'
     }
 
     stages {
@@ -40,37 +41,53 @@ pipeline {
                 bat '''
                     python -m pip install --upgrade pip
                     python -m pip install -r requirements.txt
-                    python -m pip install pytest selenium pytest-selenium allure-pytest webdriver-manager
+                    python -m pip install pytest selenium pytest-selenium allure-pytest webdriver-manager allure-python-commons
                 '''
+            }
+        }
+
+        stage('Clean Workspace') {
+            steps {
+                // Clean previous Allure results
+                bat "if exist ${ALLURE_RESULTS} rmdir /s /q ${ALLURE_RESULTS}"
             }
         }
 
         stage('Run Tests') {
             steps {
                 bat """
-                    python -m pytest -v -s testcases --browser %BROWSER% --alluredir=./allure-results --clean-alluredir/
+                    python -m pytest -v -s testcases --browser %BROWSER% --alluredir=${ALLURE_RESULTS} --clean-alluredir
                 """
-            }
-            post {
-                always {
-                    allure report: 'allure-results', results: [[path: 'allure-results']]
-                }
             }
         }
 
-        stage('Publish HTML Report') {
-            when {
-                anyOf {
-                    equals expected: 'SUCCESS', actual: currentBuild.currentResult
-                    equals expected: 'UNSTABLE', actual: currentBuild.currentResult
+        stage('Verify Allure Results') {
+            steps {
+                // Debugging step to verify JSON files were generated
+                bat "dir /s /b ${ALLURE_RESULTS}\\*.*"
+            }
+        }
+
+        stage('Publish Allure Report') {
+            steps {
+                script {
+                    // Generate and publish Allure report
+                    allure([
+                        includeProperties: false,
+                        jdk: '',
+                        properties: [],
+                        reportBuildPolicy: 'ALWAYS',
+                        results: [[path: "${ALLURE_RESULTS}"]]
+                    ])
                 }
             }
-            stage("Publish Allure Report"){
-            steps{
-            echo"Publish Allure"
-            allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
-            }
-            }
+        }
+    }
+
+    post {
+        always {
+            // Archive test results for debugging
+            archiveArtifacts artifacts: "${ALLURE_RESULTS}/**/*.*", allowEmptyArchive: true
         }
     }
 }
