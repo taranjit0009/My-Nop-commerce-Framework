@@ -57,6 +57,13 @@ pipeline {
                 }
             }
         }
+        stage('Generate Allure Report') {
+            steps {
+                bat '''
+                    allure generate allure-results -o allure-report --clean
+                '''
+            }
+        }
 
         stage('Publish HTML Report') {
             when {
@@ -66,17 +73,21 @@ pipeline {
                 }
             }
             steps {
-                publishHTML(
-                    target: [
-                        allowMissing: true,
-                        alwaysLinkToLastBuild: false,
-                        keepAll: false,
-                        reportDir: 'allure-results',
-                        reportFiles: 'index.html',
-                        reportName: 'Allure Report'
-                    ]
-                )
-            }
+                script {
+                 // Ensure directory exists
+                    bat '''
+                         if not exist "allure-report" mkdir allure-report
+                    '''
+            publishHTML(
+                target: [
+                    allowMissing: false,  // Changed to false to fail explicitly
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    reportDir: 'allure-report',
+                    reportFiles: 'index.html',
+                    reportName: 'Allure Report'
+                ]
+            )
         }
     }
 }
