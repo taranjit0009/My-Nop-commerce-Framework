@@ -73,21 +73,17 @@ pipeline {
                 }
             }
             steps {
-                script {
-                 // Ensure directory exists
-                    bat '''
-                         if not exist "allure-report" mkdir allure-report
-                    '''
-            publishHTML(
-                target: [
-                    allowMissing: false,  // Changed to false to fail explicitly
-                    alwaysLinkToLastBuild: true,
-                    keepAll: true,
-                    reportDir: 'allure-report',
-                    reportFiles: 'index.html',
-                    reportName: 'Allure Report'
-                ]
-            )
+                publishHTML(
+                    target: [
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'allure-results',
+                        reportFiles: 'index.html',
+                        reportName: 'Allure Report'
+                    ]
+                )
+            }
         }
     }
 }
