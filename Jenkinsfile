@@ -48,7 +48,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 bat """
-                    python -m pytest -v -s --browser=%BROWSER% --alluredir=allure-results tests/
+                    python -m pytest -v -s --browser %BROWSER% --alluredir=allure-results tests/
                 """
             }
             post {
