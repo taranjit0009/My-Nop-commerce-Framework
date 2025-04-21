@@ -13,15 +13,6 @@ pipeline {
             }
         }
 
-       stage('Set Up Python') {
-            steps {
-                sh '''
-                    sudo apt-get update -y
-                    sudo apt-get install -y python3.13 python3.13 -venv python3.13-dev python3-pip
-                '''
-            }
-        }
-
         stage('Install Dependencies') {
             steps {
                 sh '''
