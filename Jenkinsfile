@@ -2,8 +2,10 @@ pipeline {
     agent any
 
     environment {
-        PYTHON_VERSION = '3.8'  // Changed to stable LTS version (3.13 isn't stable yet)
-        BROWSER = 'chrome'      // Default browser
+        PYTHON_VERSION = '3.8'  // Using stable version
+        BROWSER = 'chrome'
+        // Add Python to PATH if not already there
+        PATH = "${env.PATH};C:\\Python${PYTHON_VERSION.replace('.','')}\\Scripts;C:\\Python${PYTHON_VERSION.replace('.','')}"
     }
 
     stages {
@@ -15,27 +17,38 @@ pipeline {
 
         stage('Set Up Python') {
             steps {
-                sh '''
-                    sudo apt-get update -y
-                    sudo apt-get install -y python${PYTHON_VERSION} python${PYTHON_VERSION}-venv python${PYTHON_VERSION}-dev python3-pip
+                bat '''
+                    @echo off
+                    :: Check if Python is already installed
+                    python --version > nul 2>&1
+                    if %errorlevel% neq 0 (
+                        echo Installing Python...
+                        :: Download and install Python silently
+                        curl -o python-installer.exe https://www.python.org/ftp/python/%PYTHON_VERSION%/python-%PYTHON_VERSION%-amd64.exe
+                        start /wait python-installer.exe /quiet InstallAllUsers=1 PrependPath=1
+                        del python-installer.exe
+                    )
+                    :: Verify installation
+                    python --version
+                    pip --version
                 '''
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                sh '''
-                    python${PYTHON_VERSION} -m pip install --upgrade pip
-                    python${PYTHON_VERSION} -m pip install -r requirements.txt
-                    python${PYTHON_VERSION} -m pip install pytest selenium pytest-selenium allure-pytest webdriver-manager
+                bat '''
+                    python -m pip install --upgrade pip
+                    python -m pip install -r requirements.txt
+                    python -m pip install pytest selenium pytest-selenium allure-pytest webdriver-manager
                 '''
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh """
-                    python${PYTHON_VERSION} -m pytest -v -s --browser=${env.BROWSER} --alluredir=allure-results tests/
+                bat """
+                    python -m pytest -v -s --browser=%BROWSER% --alluredir=allure-results tests/
                 """
             }
             post {
