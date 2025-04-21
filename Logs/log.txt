@@ -98,3 +98,7 @@
 2025-04-21 18:53:25:test_login:test_login_admin:INFO:User is Logged in.
 2025-04-21 20:50:40:test_login:test_login_admin:INFO:URL is successfully launched.
 2025-04-21 20:50:41:test_login:test_login_admin:INFO:User is Logged in.
+2025-04-21 23:01:13:test_login:test_login_admin:INFO:URL is successfully launched.
+2025-04-21 23:01:16:test_login:test_login_admin:INFO:User is Logged in.
+2025-04-21 23:26:05:test_login:test_login_admin:INFO:URL is successfully launched.
+2025-04-21 23:26:13:test_login:test_login_admin:INFO:User is Logged in.
