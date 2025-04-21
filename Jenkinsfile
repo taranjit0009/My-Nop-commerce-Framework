@@ -40,7 +40,7 @@ pipeline {
                 bat '''
                     python -m pip install --upgrade pip
                     python -m pip install -r requirements.txt
-                    python -m pip install pytest selenium pytest-selenium allure-pytest webdriver-manager
+                    python -m pip install pytest selenium pytest-selenium  webdriver-manager
                 '''
             }
         }
